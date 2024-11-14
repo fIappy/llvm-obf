@@ -44,6 +44,7 @@ struct EncryptedGV {
 
 class StringEncryptionPass : public PassInfoMixin<StringEncryptionPass> {
 public:
+  bool flag;
   struct CSPEntry {
     CSPEntry()
         : ID(0), Offset(0), DecGV(nullptr), DecStatus(nullptr),
@@ -79,9 +80,10 @@ public:
 
   map<Function * /*Function*/, GlobalVariable * /*Decryption Status*/>
       encstatus;
-  StringEncryptionPass() {
+  StringEncryptionPass(bool flag) {
+    this->flag = flag;
     Options = new ObfuscationOptions;
-    EncryptedStringTable = nullptr;
+    //EncryptedStringTable = new GlobalVariable;
   }
   PreservedAnalyses run(Module &M, ModuleAnalysisManager &AM); // Pass实现函数
   bool do_StrEnc(Module &M, ModuleAnalysisManager &AM);

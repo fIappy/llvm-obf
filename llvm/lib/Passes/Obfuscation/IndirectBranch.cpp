@@ -17,14 +17,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "IndirectBranch.h"
 #include <random>
-static cl::opt<bool> s_obf_ibr("ibr", cl::init(false),
-                               cl::desc("Indirect Branch"));
+
 PreservedAnalyses IndirectBranchPass::run(Module &M, ModuleAnalysisManager &AM) {
-  if (s_obf_ibr) {
+  if (this->flag) {
     outs() << "[Soule] force.run.IndirectBranchPass\n";
   }
   for (Function &Fn : M) {
-    if (toObfuscate(s_obf_ibr, &Fn, "ibr")) {
+    if (toObfuscate(flag, &Fn, "ibr")) {
 
       if (Options && Options->skipFunction(Fn.getName())) {
         continue;
@@ -133,14 +132,14 @@ GlobalVariable *IndirectBranchPass::getIndirectTargets(Function &F, ConstantInt 
   std::vector<Constant *> Elements;
   for (const auto BB : BBTargets) {
     Constant *CE = ConstantExpr::getBitCast(BlockAddress::get(BB),
-                                            Type::getInt8Ty(F.getContext()));
+                                            PointerType::get(F.getContext(), 0));
     CE = ConstantExpr::getGetElementPtr(Type::getInt8Ty(F.getContext()), CE,
                                         EncKey);
     Elements.push_back(CE);
   }
 
   ArrayType *ATy =
-      ArrayType::get(Type::getInt8Ty(F.getContext()), Elements.size());
+      ArrayType::get(PointerType::get(F.getContext(), 0), Elements.size());
   Constant *CA = ConstantArray::get(ATy, ArrayRef<Constant *>(Elements));
   GV =
       new GlobalVariable(*F.getParent(), ATy, false,
@@ -150,6 +149,5 @@ GlobalVariable *IndirectBranchPass::getIndirectTargets(Function &F, ConstantInt 
 }
 
 IndirectBranchPass *llvm::createIndirectBranch(bool flag) {
-  s_obf_ibr = flag;
-  return new IndirectBranchPass();
+  return new IndirectBranchPass(flag);
 }

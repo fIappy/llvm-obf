@@ -3,8 +3,7 @@
 #define DEBUG_TYPE "strenc"
 
 using namespace llvm;
-static cl::opt<bool> s_obf_sobf("sobf", cl::init(false),
-                                cl::desc("String Obfuscation"));
+
 bool StringEncryptionPass::do_StrEnc(Module &M, ModuleAnalysisManager &AM) {
   std::set<GlobalVariable *> ConstantStringUsers;
 
@@ -122,7 +121,7 @@ bool StringEncryptionPass::do_StrEnc(Module &M, ModuleAnalysisManager &AM) {
 }
 
 PreservedAnalyses StringEncryptionPass::run(Module &M, ModuleAnalysisManager &AM) {
-  if (s_obf_sobf) {
+  if (this->flag) {
     outs() << "[Soule] force.run.StringEncryptionPass\n";
     if (do_StrEnc(M, AM))
       return PreservedAnalyses::none();
@@ -169,7 +168,7 @@ Function *StringEncryptionPass::buildDecryptFunction(
     LLVMContext &Ctx = M->getContext();
     IRBuilder<> IRB(Ctx);
     FunctionType *FuncTy = FunctionType::get(
-        Type::getVoidTy(Ctx), {IRB.getInt8Ty(), IRB.getInt8Ty()}, false);
+        Type::getVoidTy(Ctx), {IRB.getPtrTy(), IRB.getPtrTy()}, false);
     Function *DecFunc = Function::Create(
         FuncTy, GlobalValue::PrivateLinkage,
         "goron_decrypt_string_" + Twine::utohexstr(Entry->ID), M);
@@ -311,7 +310,7 @@ void StringEncryptionPass::lowerGlobalConstantStruct(ConstantStruct *CS,
 }
 
 bool StringEncryptionPass::processConstantStringUse(Function *F) {
-    if (!toObfuscate(s_obf_sobf, F, "cse")) {
+    if (!toObfuscate(flag, F, "cse")) {
         return false;
     }
     if (Options && Options->skipFunction(F->getName())) {
@@ -363,8 +362,8 @@ bool StringEncryptionPass::processConstantStringUse(Function *F) {
                                 PHI->getIncomingBlock(i)->getTerminator();
                             IRBuilder<> IRB(InsertPoint);
 
-                            Value *OutBuf = IRB.CreateBitCast(Entry->DecGV,
-                                                              IRB.getInt8Ty());
+                            Value *OutBuf = IRB.CreateBitCast(
+                                Entry->DecGV, IRB.getPtrTy());
                             Value *Data = IRB.CreateInBoundsGEP(
                                 EncryptedStringTable->getValueType(),
                                 EncryptedStringTable,
@@ -404,8 +403,8 @@ bool StringEncryptionPass::processConstantStringUse(Function *F) {
                         } else {
                             IRBuilder<> IRB(&Inst);
 
-                            Value *OutBuf = IRB.CreateBitCast(Entry->DecGV,
-                                                              IRB.getInt8Ty());
+                            Value *OutBuf = IRB.CreateBitCast(
+                                Entry->DecGV, IRB.getPtrTy());
                             Value *Data = IRB.CreateInBoundsGEP(
                                 EncryptedStringTable->getValueType(),
                                 EncryptedStringTable,
@@ -486,6 +485,5 @@ void StringEncryptionPass::deleteUnusedGlobalVariable() {
 }
 
 StringEncryptionPass *llvm::createStringEncryption(bool flag){
-  s_obf_sobf = flag;
-    return new StringEncryptionPass();
+    return new StringEncryptionPass(flag);
 }

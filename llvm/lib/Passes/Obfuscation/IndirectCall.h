@@ -17,13 +17,15 @@
 namespace llvm{
     class IndirectCallPass : public PassInfoMixin<IndirectCallPass>{ 
         public:
+            bool flag;
             std::vector<CallInst *> CallSites;
             IPObfuscationContext *IPO;
             ObfuscationOptions *Options;
             std::vector<Function *> Callees;
             std::map<Function *, unsigned> CalleeNumbering;
             CryptoUtils RandomEngine;
-            IndirectCallPass(){
+            IndirectCallPass(bool flag){
+                this->flag = flag;
                 this->IPO = new IPObfuscationContext;
                 this->Options = new ObfuscationOptions;
             } // 携带flag的构造函数

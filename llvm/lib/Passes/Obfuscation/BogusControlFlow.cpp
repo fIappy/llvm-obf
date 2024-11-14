@@ -134,9 +134,7 @@ const int defaultObfRate = 70, defaultObfTime = 2;
 static cl::opt<int> ObfProbRate("bcf_prob", cl::desc("Choose the probability [%] each basic blocks will be obfuscated by the -bcf pass"), cl::value_desc("probability rate"), cl::init(defaultObfRate), cl::Optional);
 
 static cl::opt<int> ObfTimes("bcf_loop", cl::desc("Choose how many time the -bcf pass loop on a function"), cl::value_desc("number of times"), cl::init(defaultObfTime), cl::Optional);
-static cl::opt<bool> s_obf_bcf(
-    "bcf", cl::init(false),
-    cl::desc("BogusControlFlow: application number -bcf_loop=x must be x > 0"));
+
 
 BasicBlock *createAlteredBasicBlock(BasicBlock *basicBlock, const Twine &Name = "gen", Function *F = 0);
 
@@ -153,7 +151,7 @@ PreservedAnalyses BogusControlFlowPass::run(Function& F, FunctionAnalysisManager
       return PreservedAnalyses::all();
     }
     // If fla annotations
-    if (toObfuscate(s_obf_bcf, &F, "bcf")) {
+    if (toObfuscate(flag, &F, "bcf")){
       bogus(F);
       doF(*F.getParent(), F);
       return PreservedAnalyses::none();
@@ -679,6 +677,5 @@ bool BogusControlFlowPass::doF(Module &M, Function &F) {
  * @return FunctionPass*
  */
 BogusControlFlowPass *llvm::createBogusControlFlow(bool flag){
-  s_obf_bcf = flag;
-    return new BogusControlFlowPass();
+    return new BogusControlFlowPass(flag);
 }

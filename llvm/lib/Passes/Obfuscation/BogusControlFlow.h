@@ -34,7 +34,9 @@ using namespace llvm;
 namespace llvm{ // 基本块分割
     class BogusControlFlowPass : public PassInfoMixin<BogusControlFlowPass>{
         public:
-            BogusControlFlowPass(){
+            bool flag;
+            BogusControlFlowPass(bool flag){
+                this->flag = flag;
             } // 携带flag的构造函数
             PreservedAnalyses run(Function &F, FunctionAnalysisManager &AM); // Pass实现函数
             void bogus(Function &F);

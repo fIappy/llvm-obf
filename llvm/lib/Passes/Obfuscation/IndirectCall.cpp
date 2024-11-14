@@ -2,8 +2,7 @@
 
 using namespace llvm;
 using std::vector;
-static cl::opt<bool> s_obf_icall("icall", cl::init(false),
-                                 cl::desc("Indirect Call"));
+
 /**
  * @brief 
  * 
@@ -13,7 +12,7 @@ static cl::opt<bool> s_obf_icall("icall", cl::init(false),
  */
 PreservedAnalyses IndirectCallPass::run(Function &F, FunctionAnalysisManager &AM){
     // 判断是否需要开启间接调用
-  if (toObfuscate(s_obf_icall, &F, "icall")) {
+    if (toObfuscate(flag, &F, "icall")){
       doIndirctCall(F);
       return PreservedAnalyses::none();
     }
@@ -111,13 +110,11 @@ GlobalVariable *IndirectCallPass::getIndirectCallees(Function &F, ConstantInt *E
     // callee's address
     std::vector<Constant *> Elements;
     for (auto Callee : Callees){
-      Constant *CE =
-          ConstantExpr::getBitCast(Callee, Type::getInt8Ty(F.getContext()));
+        Constant *CE = ConstantExpr::getBitCast(Callee, PointerType::get(F.getContext(), 0));
         CE = ConstantExpr::getGetElementPtr(Type::getInt8Ty(F.getContext()), CE, EncKey);
         Elements.push_back(CE);
     }
-    ArrayType *ATy =
-        ArrayType::get(Type::getInt8Ty(F.getContext()), Elements.size());
+    ArrayType *ATy = ArrayType::get(PointerType::get(F.getContext(), 0), Elements.size());
     Constant *CA = ConstantArray::get(ATy, ArrayRef<Constant *>(Elements));
     GV = new GlobalVariable(*F.getParent(), ATy, false, GlobalValue::LinkageTypes::PrivateLinkage, CA, GVName);
     appendToCompilerUsed(*F.getParent(), {GV});
@@ -158,6 +155,5 @@ void IndirectCallPass::NumberCallees(Function &F){
  * @return IndirectCallPass* 
  */
 IndirectCallPass *llvm::createIndirectCall(bool flag){
-  s_obf_icall = flag;
-  return new IndirectCallPass();
+    return new IndirectCallPass(flag);
 }

@@ -14,24 +14,21 @@
 
 using namespace llvm;
 using std::vector;
+static bool valueEscapes(const Instruction& Inst) {
+    if (!Inst.getType()->isSized())
+        return false;
 
-LLVMContext *CONTEXT = nullptr;
-static cl::opt<bool> obf_function_name_cmd(
-    "fncmd", cl::init(false),
-    cl::desc("use function name control obfuscation(_ + "
-             "command + _ | example: function_fla_bcf_)"));
-static bool valueEscapes(const Instruction &Inst) {
-  if (!Inst.getType()->isSized())
+    const BasicBlock* BB = Inst.getParent();
+    for (const User* U : Inst.users()) {
+        const Instruction* UI = cast<Instruction>(U);
+        if (UI->getParent() != BB || isa<PHINode>(UI))
+            return true;
+    }
     return false;
-
-  const BasicBlock *BB = Inst.getParent();
-  for (const User *U : Inst.users()) {
-    const Instruction *UI = cast<Instruction>(U);
-    if (UI->getParent() != BB || isa<PHINode>(UI))
-      return true;
-  }
-  return false;
 }
+LLVMContext *CONTEXT = nullptr;
+bool obf_function_name_cmd = false;
+
 /**
  * @brief 参考资料:https://www.jianshu.com/p/0567346fd5e8
  *        作用是读取llvm.global.annotations中的annotation值 从而实现过滤函数

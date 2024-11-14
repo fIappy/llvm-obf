@@ -21,12 +21,14 @@ using namespace std;
 namespace llvm { // 间接跳转
     class IndirectGlobalVariablePass : public PassInfoMixin<IndirectGlobalVariablePass> {
         public:
+          bool flag;
           ObfuscationOptions *Options;
           std::map<GlobalVariable *, unsigned> GVNumbering;
           std::vector<GlobalVariable *> GlobalVariables;
           CryptoUtils RandomEngine;
 
-          IndirectGlobalVariablePass() {
+          IndirectGlobalVariablePass(bool flag) {
+            this->flag = flag;
             this->Options = new ObfuscationOptions;
           } // 携带flag的构造函数
           PreservedAnalyses run(Module &M, ModuleAnalysisManager &AM); // Pass实现函数

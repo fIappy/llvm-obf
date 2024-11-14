@@ -23,9 +23,6 @@ using std::vector;
 #define DEBUG_TYPE "split" // 调试标识
 // Stats
 STATISTIC(Split, "Basicblock splitted"); // 宏定义
-static cl::opt<bool>
-    s_obf_split("split", cl::init(false),
-                cl::desc("SplitBasicBlock: split_num=3(init)"));
 
 // 可选的参数，指定一个基本块会被分裂成几个基本块，默认值为 3
 static cl::opt<int> SplitNum("split_num", cl::init(3), cl::desc("Split <split_num> time(s) each BB")); 
@@ -40,7 +37,7 @@ static cl::opt<int> SplitNum("split_num", cl::init(3), cl::desc("Split <split_nu
  */
 PreservedAnalyses SplitBasicBlockPass::run(Function& F, FunctionAnalysisManager& AM) {
     Function *tmp = &F; // 传入的Function
-    if (toObfuscate(s_obf_split, tmp, "split")) { // 判断什么函数需要开启混淆
+    if (toObfuscate(flag, tmp, "split")){ // 判断什么函数需要开启混淆
         split(tmp); // 分割流程
         ++Split; // 计次
         return PreservedAnalyses::none();
@@ -142,6 +139,5 @@ void SplitBasicBlockPass::shuffle(std::vector<int> &vec){
  * @return FunctionPass*
  */
 SplitBasicBlockPass *llvm::createSplitBasicBlock(bool flag){
-  s_obf_split = flag;
-    return new SplitBasicBlockPass();
+    return new SplitBasicBlockPass(flag);
 }

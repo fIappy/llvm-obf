@@ -38,13 +38,15 @@ using namespace llvm;
 namespace llvm {
     class SubstitutionPass : public PassInfoMixin<SubstitutionPass> {
         public:
+          bool flag;
           void (SubstitutionPass::*funcAdd[NUMBER_ADD_SUBST])(BinaryOperator *bo);
           void (SubstitutionPass::*funcSub[NUMBER_SUB_SUBST])(BinaryOperator *bo);
           void (SubstitutionPass::*funcAnd[NUMBER_AND_SUBST])(BinaryOperator *bo);
           void (SubstitutionPass::*funcOr[NUMBER_OR_SUBST])(BinaryOperator *bo);
           void (SubstitutionPass::*funcXor[NUMBER_XOR_SUBST])(BinaryOperator *bo);
 
-          SubstitutionPass() {
+          SubstitutionPass(bool flag) {
+            this->flag = flag;
             funcAdd[0] = &SubstitutionPass::addNeg;
             funcAdd[1] = &SubstitutionPass::addDoubleNeg;
             funcAdd[2] = &SubstitutionPass::addRand;

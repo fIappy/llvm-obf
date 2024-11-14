@@ -17,15 +17,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "IndirectGlobalVariable.h"
 #include <random>
-static cl::opt<bool> s_obf_igv("igv", cl::init(false),
-                               cl::desc("Indirect Global Variable"));
+
 PreservedAnalyses IndirectGlobalVariablePass::run(Module &M, ModuleAnalysisManager &AM) {
 
-  if (s_obf_igv) {
+  if (this->flag) {
     outs() << "[Soule] force.run.IndirectGlobalVariablePass\n";
   }
   for (Function &Fn : M) {
-    if (!toObfuscate(s_obf_igv, &Fn, "igv")) {
+    if (!toObfuscate(flag, &Fn, "igv")) {
       continue;
     }
 
@@ -147,14 +146,14 @@ GlobalVariable* IndirectGlobalVariablePass::getIndirectGlobalVariables(Function 
   std::vector<Constant *> Elements;
   for (auto GVar : GlobalVariables) {
     Constant *CE =
-        ConstantExpr::getBitCast(GVar, Type::getInt8Ty(F.getContext()));
+        ConstantExpr::getBitCast(GVar, PointerType::get(F.getContext(), 0));
     CE = ConstantExpr::getGetElementPtr(Type::getInt8Ty(F.getContext()), CE,
                                         EncKey);
     Elements.push_back(CE);
   }
 
   ArrayType *ATy =
-      ArrayType::get(Type::getInt8Ty(F.getContext()), Elements.size());
+      ArrayType::get(PointerType::get(F.getContext(), 0), Elements.size());
   Constant *CA = ConstantArray::get(ATy, ArrayRef<Constant *>(Elements));
   GV =
       new GlobalVariable(*F.getParent(), ATy, false,
@@ -165,6 +164,5 @@ GlobalVariable* IndirectGlobalVariablePass::getIndirectGlobalVariables(Function 
 
 
 IndirectGlobalVariablePass *llvm::createIndirectGlobalVariable(bool flag) {
-  s_obf_igv = flag;
-  return new IndirectGlobalVariablePass();
+  return new IndirectGlobalVariablePass(flag);
 }

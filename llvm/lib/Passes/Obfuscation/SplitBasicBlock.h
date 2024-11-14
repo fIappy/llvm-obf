@@ -18,7 +18,9 @@
 namespace llvm{ // 基本块分割
     class SplitBasicBlockPass : public PassInfoMixin<SplitBasicBlockPass>{
         public:
-            SplitBasicBlockPass(){
+            bool flag;
+            SplitBasicBlockPass(bool flag){
+                this->flag = flag;
             } // 携带flag的构造函数
             PreservedAnalyses run(Function &F, FunctionAnalysisManager &AM); // Pass实现函数
             void split(Function *f); // 对单个基本块执行分裂操作

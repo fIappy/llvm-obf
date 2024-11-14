@@ -21,11 +21,13 @@ using namespace std;
 namespace llvm { // 间接跳转
     class IndirectBranchPass : public PassInfoMixin<IndirectBranchPass>{
         public:
+            bool flag;
             ObfuscationOptions *Options;
             std::map<BasicBlock *, unsigned> BBNumbering;
             std::vector<BasicBlock *> BBTargets; // all conditional branch targets
             CryptoUtils RandomEngine;
-            IndirectBranchPass(){
+            IndirectBranchPass(bool flag){
+                this->flag = flag;
                 this->Options = new ObfuscationOptions;
             } // 携带flag的构造函数
             PreservedAnalyses run(Module &M, ModuleAnalysisManager &AM); // Pass实现函数

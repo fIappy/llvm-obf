@@ -23,8 +23,7 @@
 static cl::opt<int> ObfTimes("sub_loop",
          cl::desc("Choose how many time the -sub pass loops on a function"),
          cl::value_desc("number of times"), cl::init(1), cl::Optional);
-static cl::opt<bool> s_obf_sub("sub", cl::init(false),
-                               cl::desc("Substitution: sub_loop"));
+
 
 // Stats
 STATISTIC(Add, "Add substitued");
@@ -46,7 +45,7 @@ PreservedAnalyses SubstitutionPass::run(Function &F, FunctionAnalysisManager &AM
 
   Function *tmp = &F;
   // Do we obfuscate
-  if (toObfuscate(s_obf_sub, tmp, "sub")) {
+  if (toObfuscate(flag, tmp, "sub")) {
     substitute(tmp);
     return PreservedAnalyses::none();
   }
@@ -504,6 +503,5 @@ void SubstitutionPass::xorSubstitutionRand(BinaryOperator *bo) {
 }
 
 SubstitutionPass *llvm::createSubstitutionPass(bool flag) {
-  s_obf_sub = flag;
-  return new SubstitutionPass();
+  return new SubstitutionPass(flag);
 }

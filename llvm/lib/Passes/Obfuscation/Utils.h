@@ -24,6 +24,7 @@
 extern llvm::LLVMContext *CONTEXT;
 // fla和bcf在混淆部分函数时会报错, 所以无法用命令行开启整体混淆
 // 而且Visual Studio似乎没法把 annotate 传给LLVM, 只能用函数名控制
+extern bool obf_function_name_cmd;
 using namespace std;
 namespace llvm{
     std::string readAnnotate(Function *f); // 读取llvm.global.annotations中的annotation值
