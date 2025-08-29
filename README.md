@@ -42,3 +42,20 @@ chat](https://discord.gg/xS7Z362),
 
 The LLVM project has adopted a [code of conduct](https://llvm.org/docs/CodeOfConduct.html) for
 participants to all modes of communication within the project.
+
+## Compile
+mkdir build
+cmake ../llvm -DLLVM_ENABLE_PROJECTS="clang;lld;llvm" -DLLVM_TARGETS_TO_BUILD="X86" -DCMAKE_C_FLAGS=/utf-8 -DCMAKE_CXX_FLAGS=/utf-8 -DCLANG_ENABLE_STATIC_ANALYZER=OFF -DCLANG_ENABLE_ARCMT=OFF -DCLANG_ENABLE_OBJC_REWRITER=OFF -DLLVM_ENABLE_EH=OFF -DLLVM_ENABLE_RTTI=OFF  -DLLVM_OPTIMIZED_TABLEGEN=ON  -A x64
+
+
+## For vs2022
+Select "MSBuild support for LLVM (clang-cl) toolset" when installing vs2022.
+create file "Directory.build.props" in your project dir:
+```
+<Project>
+  <PropertyGroup>
+    <LLVMInstallDir>C:\MyLLVMRootDir</LLVMInstallDir>
+    <LLVMToolsVersion>15.0.0</LLVMToolsVersion>
+  </PropertyGroup>
+</Project>
+```
